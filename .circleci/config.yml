@@ -1,0 +1,47 @@
+version: 2
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:12.7.0
+
+jobs:
+  strip:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Removing build scripts
+          command: rm -r .circleci
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
+  deploy:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          at: ~/repo
+      - run:
+          name: Setting registry URL
+          command: npm set registry https://$REGISTRY_URL
+      - run:
+          name: Authenticating with registry
+          command: echo "//$REGISTRY_URL:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+      - run:
+          name: Publishing package
+          command: npm publish
+
+workflows:
+  version: 2
+
+  strip_deploy:
+    jobs:
+      - strip:
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /v.*/            
+      - deploy:
+          requires:
+            - strip

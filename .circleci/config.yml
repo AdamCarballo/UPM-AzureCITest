@@ -45,3 +45,8 @@ workflows:
       - deploy:
           requires:
             - strip
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v.*/

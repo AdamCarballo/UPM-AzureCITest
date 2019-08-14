@@ -38,6 +38,8 @@ workflows:
     jobs:
       - strip:
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /v.*/            
       - deploy:
